@@ -2,7 +2,7 @@
 
 ## usage
 
-curl -sfL http://localhost:8000/ansible | sh
+curl -sfL http://localhost:8000/ansible | sh 
 
 ## installer files
 structure for installer files if the source does not provide one
