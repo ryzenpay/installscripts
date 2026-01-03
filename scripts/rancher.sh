@@ -10,11 +10,13 @@ echo "installing dependencies"
 sudo apt install curl -y 
 
 #kubectl server
-echo "installing rancher"
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.34.2+k3s1" sh -s - server --cluster-init
-sudo chmod +r /etc/rancher/k3s/k3s.yaml
-mkdir ~/.kube
-cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+sudo su
+echo "installing rke2"
+curl -sfL https://get.rke2.io | sh -
+systemctl enable rke2-server.service
+systemctl start rke2-server.service
+cp /etc/rancher/rke2/rke2.yaml ~/.kube/config
+export PATH=$PATH:/var/lib/rancher/rke2/bin
 
 #helm
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash 
@@ -27,6 +29,7 @@ helm install \
   --set crds.enabled=true
 
 #deploy rancher
+echo "installing rancher"
 kubectl create namespace cattle-system 
 helm repo add rancher-latest https://releases.rancher.com/server-charts/latest 
 helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=$url 
