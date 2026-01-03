@@ -10,7 +10,6 @@ echo "installing dependencies"
 sudo apt install curl -y 
 
 #kubectl server
-sudo su
 echo "installing rke2"
 curl -sfL https://get.rke2.io | sh -
 systemctl enable rke2-server.service
