@@ -7,13 +7,14 @@ url=$1
 
 #install dependencies
 echo "installing dependencies"
-apt install curl -y 
+sudo apt install curl -y 
 
 #kubectl server
 echo "installing rancher"
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.34.2+k3s1" sh -s - server --cluster-init
-mkdir ~/.kube/config
-cp /etc/rancher/k3s/k3s.yaml ~/.kube/config ; chown $USER:$USER ~/.kube/config
+sudo chmod +r /etc/rancher/k3s/k3s.yaml
+mkdir ~/.kube
+cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 
 #helm
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash 
