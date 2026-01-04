@@ -13,6 +13,4 @@ spec:
       services:
         - name: installscripts
           port: 8000
-  tls:
-    secretName: installscripts-tls
 
