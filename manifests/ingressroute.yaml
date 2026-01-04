@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: installscripts
+  namespace: installscripts
+spec:
+  entryPoints:
+    - websecure
+
+  routes:
+    - match: Host(`script.ryzen.me`)
+      kind: Rule
+      services:
+        - name: installscripts
+          port: 8000
+  tls:
+    secretName: installscripts-tls
+

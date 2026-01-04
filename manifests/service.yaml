@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: installscripts
+  name: installscripts
+  namespace: installscripts
+spec:
+  ports:
+    - name: http
+      port: 8000
+  selector:
+    app: installscripts

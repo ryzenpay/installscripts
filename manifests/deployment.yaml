@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: installscripts
+  namespace: installscripts
+  labels:
+    app: installscripts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: installscripts
+  template:
+    metadata:
+      labels:
+        app: installscripts
+    spec:
+      imagePullSecrets:
+        - name: harborpullsecret
+      containers:
+      - name: installscripts
+        image: harbor.ryzen.me/library/installscripts:latest
+        ports:
+        - containerPort: 8000
+          protocol: TCP
