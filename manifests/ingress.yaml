@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: cert-issuer
+  name: installscripts
+  namespace: installscripts
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: script.ryzen.me
+      http:
+        paths:
+          - backend:
+              service:
+                name: installscripts
+                port:
+                  number: 8000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - script.ryzen.me
+      secretName: installscripts-tls
