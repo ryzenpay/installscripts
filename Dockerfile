@@ -12,4 +12,4 @@ COPY app.py app.py
 COPY templates/* templates/
 COPY --chmod=0755 scripts/* scripts/
 
-CMD ["gunicorn", "app:app", "-b", "0.0.0.0"]
+CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8000", "--access-logfile", "-"]
