@@ -29,6 +29,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // search functionality
         document.getElementById('searchInput').addEventListener('keyup', function () {
             const searchTerm = this.value.toLowerCase();
             const items = document.querySelectorAll('.script-item');
@@ -43,8 +44,6 @@
                     item.classList.add('d-none');
                 }
             });
-
-            // Show "No Results" message if nothing matches
             const noResults = document.getElementById('noResults');
             if (hasResults) {
                 noResults.classList.add('d-none');
@@ -52,12 +51,21 @@
                 noResults.classList.remove('d-none');
             }
         });
+
+        // clipboard functionality
+        document.querySelectorAll('.script-item').forEach(item => {
+            item.addEventListener('click', function (e) {
+                const command = `curl -sfL ${this.href} | sh`;
+                navigator.clipboard.writeText(command);
+            });
+        });
     </script>
 </body>
 
 <footer class="text-center">
     <hr class="rounded border-top w-50 mx-auto">
     <p>"curl -sfL http://localhost:8000/&lt;SCRIPT&gt; | sh</p>
+    <p>or click any of the scripts above and paste the command</p>
 </footer>
 
 </html>
