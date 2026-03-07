@@ -22,7 +22,7 @@ spec:
         - name: gitpullsecret
       containers:
       - name: installscripts
-        image: ryzen.ryzen.me/ryzen/installscripts:latest
+        image: git.ryzen.me/ryzen/installscripts:latest
         ports:
         - containerPort: 8000
           protocol: TCP
