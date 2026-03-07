@@ -19,10 +19,10 @@ spec:
         app: installscripts
     spec:
       imagePullSecrets:
-        - name: harborpullsecret
+        - name: gitpullsecret
       containers:
       - name: installscripts
-        image: harbor.ryzen.me/library/installscripts:latest
+        image: ryzen.ryzen.me/ryzen/installscripts:latest
         ports:
         - containerPort: 8000
           protocol: TCP
