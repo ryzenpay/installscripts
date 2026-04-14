@@ -6,6 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INSTALLSCRIPTS</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .variant-item {
+            transition: background-color 0.2s ease;
+            border-left: 3px solid #6c757d !important;
+            cursor: pointer;
+        }
+        .variant-item:hover {
+            background-color: rgba(108, 117, 125, 0.15) !important;
+        }
+        .script-item {
+            transition: all 0.2s ease;
+        }
+        .script-item:hover {
+            background-color: rgba(108, 117, 125, 0.05);
+        }
+        .btn-outline-primary:hover,
+        .btn-outline-secondary:hover {
+            transform: scale(1.05);
+        }
+        .clickable-area {
+            cursor: pointer;
+            user-select: none;
+        }
+        .clickable-area:hover {
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,20 +44,126 @@
                 placeholder="Search scripts (e.g. docker, python)..." autofocus>
         </div>
         <br>
-        <div class="list-group" id="scriptList">
-            {% for file in files %}
-            <a href="{{ file }}" class="list-group-item list-group-item-action script-item">
-                {{ file }}
-            </a>
-            {% endfor %}
-            <div id="noResults" class="list-group-item text-muted text-center d-none">No scripts found.</div>
+        <div id="scriptList">
+            <div class="list-group">
+                {% for script in scripts %}
+                    {% if script.variants|length > 1 %}
+                    {# Multiple variants - expandable #}
+                    <div class="list-group-item script-item" data-name="{{ script.name }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="clickable-area flex-grow-1" onclick="toggleVariants('{{ script.name }}')">
+                                <strong>{{ script.name }}</strong>
+                                <span class="badge bg-secondary ms-2">{{ script.variants|length }} variants</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyUniversalCommand(this, '{{ script.name }}', event)" title="Copy auto-detect command">
+                                    <small>Copy universal</small>
+                                </button>
+                                <span id="arrow-{{ script.name }}" style="cursor: pointer; user-select: none;" onclick="toggleVariants('{{ script.name }}')">▼</span>
+                            </div>
+                        </div>
+                        <div id="variants-{{ script.name }}" class="mt-2 d-none">
+                            <div class="list-group list-group-flush">
+                                {% for os_type, path in script.variants.items() %}
+                                <div class="list-group-item py-2 ps-4 variant-item d-flex justify-content-between align-items-center" data-os="{{ os_type }}" data-path="{{ path }}">
+                                    <div class="clickable-area flex-grow-1" onclick="copyVariantCommand(this, '{{ path }}', '{{ os_type }}')">
+                                        {% if os_type == 'debian' %}
+                                        <strong>Debian</strong>
+                                        {% elif os_type == 'ubuntu' %}
+                                        <strong>Ubuntu</strong>
+                                        {% elif os_type == 'universal' %}
+                                        <strong>Universal</strong> <span class="text-muted ms-1">(all Linux)</span>
+                                        {% else %}
+                                        <strong>{{ os_type|capitalize }}</strong>
+                                        {% endif %}
+                                    </div>
+                                    <a href="/view/{{ path }}" class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation()">View</a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    {# Single variant - click to copy #}
+                    <div class="list-group-item list-group-item-action script-item d-flex justify-content-between align-items-center" data-name="{{ script.name }}">
+                        <div class="clickable-area flex-grow-1" onclick="copySingleCommand(this, '{{ script.name }}')">
+                            <strong>{{ script.name }}</strong>
+                        </div>
+                        <a href="/view/{{ script.name }}" class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation()">View</a>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                <div id="noResults" class="list-group-item text-muted text-center d-none">No scripts found.</div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // search functionality
+        // Toggle variants display
+        function toggleVariants(scriptName) {
+            const variantsDiv = document.getElementById(`variants-${scriptName}`);
+            const arrow = document.getElementById(`arrow-${scriptName}`);
+
+            if (variantsDiv.classList.contains('d-none')) {
+                variantsDiv.classList.remove('d-none');
+                arrow.textContent = '▲';
+            } else {
+                variantsDiv.classList.add('d-none');
+                arrow.textContent = '▼';
+            }
+        }
+
+        // Copy universal auto-detect command
+        function copyUniversalCommand(element, scriptName, event) {
+            event.stopPropagation(); // Prevent toggling when clicking button
+            const command = `curl -sfL ${window.location.origin}/${scriptName} | sh`;
+            navigator.clipboard.writeText(command).then(() => {
+                const originalText = element.innerHTML;
+                element.innerHTML = '<small>✓ Copied</small>';
+                element.classList.remove('btn-outline-primary');
+                element.classList.add('btn-success');
+                setTimeout(() => {
+                    element.innerHTML = originalText;
+                    element.classList.remove('btn-success');
+                    element.classList.add('btn-outline-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Copy single variant command
+        function copySingleCommand(element, scriptName) {
+            const command = `curl -sfL ${window.location.origin}/${scriptName} | sh`;
+            navigator.clipboard.writeText(command).then(() => {
+                const originalHTML = element.innerHTML;
+                element.innerHTML = `<strong>${scriptName}</strong> <span class="text-success">- ✓ Copied</span>`;
+                setTimeout(() => {
+                    element.innerHTML = originalHTML;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Copy variant-specific command
+        function copyVariantCommand(element, path, osType) {
+            const command = `curl -sfL ${window.location.origin}/${path} | sh`;
+            navigator.clipboard.writeText(command).then(() => {
+                const originalHTML = element.innerHTML;
+                const displayName = osType.charAt(0).toUpperCase() + osType.slice(1);
+                element.innerHTML = `<strong>${displayName}</strong> <span class="text-success">- ✓ Copied</span> <span class="text-muted ms-1">(OS-specific)</span>`;
+                setTimeout(() => {
+                    element.innerHTML = originalHTML;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Search functionality
         document.getElementById('searchInput').addEventListener('keyup', function () {
             const searchTerm = this.value.toLowerCase();
             const items = document.querySelectorAll('.script-item');
@@ -52,20 +186,21 @@
             }
         });
 
-        // clipboard functionality
-        document.querySelectorAll('.script-item').forEach(item => {
-            item.addEventListener('click', function (e) {
-                const command = `curl -sfL ${this.href} | sh`;
-                navigator.clipboard.writeText(command);
-            });
-        });
     </script>
 </body>
 
-<footer class="text-center">
+<footer class="text-center mt-5 mb-4">
     <hr class="rounded border-top w-50 mx-auto">
-    <p>"curl -sfL http://localhost:8000/&lt;SCRIPT&gt; | sh</p>
-    <p>or click any of the scripts above and paste the command</p>
+    <div class="mb-3">
+        <p class="mb-1"><code>curl -sfL http://localhost:8000/&lt;SCRIPT&gt; | sh</code></p>
+    </div>
+    <div class="text-muted">
+        <small>
+            <strong>Click script name</strong> → Copies install command to clipboard<br>
+            <strong>Click "View"</strong> → Opens rendered script with syntax highlighting<br>
+            <strong>Multiple variants</strong> → Expand to choose OS-specific version
+        </small>
+    </div>
 </footer>
 
 </html>

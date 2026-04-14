@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ script_name }} - Installation Script</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <style>
+        body {
+            background-color: #0d1117;
+        }
+        .code-container {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            position: relative;
+        }
+        .code-header {
+            background-color: #0d1117;
+            border-bottom: 1px solid #30363d;
+            padding: 12px 16px;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-body {
+            padding: 16px;
+            overflow-x: auto;
+        }
+        pre {
+            margin: 0;
+            background: transparent !important;
+            padding: 0 !important;
+        }
+        code {
+            background: transparent !important;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+        .line-numbers {
+            counter-reset: line;
+        }
+        .line-numbers code {
+            counter-increment: line;
+        }
+        .line-numbers code::before {
+            content: counter(line);
+            display: inline-block;
+            width: 3em;
+            padding-right: 1em;
+            margin-right: 1em;
+            text-align: right;
+            color: #6e7681;
+            border-right: 1px solid #30363d;
+            user-select: none;
+        }
+        .install-command {
+            background-color: #1c2128;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: monospace;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .badge-custom {
+            background-color: #238636;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">{{ script_name }}</h2>
+                        <p class="text-muted mb-0">Installation Script</p>
+                    </div>
+                    <a href="/" class="btn btn-outline-secondary">← Back to Scripts</a>
+                </div>
+
+                <!-- Install Command -->
+                <div class="install-command">
+                    <div>
+                        <small class="text-muted d-block mb-1">Install Command:</small>
+                        <code id="install-command">curl -sfL {{ request.url_root }}{{ script_path }} | sh</code>
+                    </div>
+                    <button class="btn btn-sm btn-success copy-btn" onclick="copyInstallCommand()">
+                        Copy
+                    </button>
+                </div>
+
+                <!-- Script Content -->
+                <div class="code-container">
+                    <div class="code-header">
+                        <div>
+                            <span class="badge-custom">bash</span>
+                            <span class="text-muted ms-2">{{ script_path }}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyScriptContent()">
+                            Copy Script
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <pre class="line-numbers"><code class="language-bash">{{ script_content }}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Download Button -->
+                <div class="mt-3 text-center">
+                    <a href="/{{ script_path }}" download="{{ script_name }}.sh" class="btn btn-outline-light">
+                        Download Script
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+
+    <script>
+        // Initialize syntax highlighting
+        hljs.highlightAll();
+
+        // Copy install command
+        function copyInstallCommand() {
+            const command = document.getElementById('install-command').textContent;
+            navigator.clipboard.writeText(command).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-success');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('btn-outline-success');
+                    btn.classList.add('btn-success');
+                }, 2000);
+            });
+        }
+
+        // Copy entire script content
+        function copyScriptContent() {
+            // Get the actual script content from the code element
+            const codeElement = document.querySelector('code.language-bash');
+            const scriptContent = codeElement.textContent;
+            navigator.clipboard.writeText(scriptContent).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-success');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-primary');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

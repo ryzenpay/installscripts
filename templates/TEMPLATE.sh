@@ -1,35 +1,71 @@
 #!/usr/bin/env bash
 #
-# Helm installation (OS-agnostic)
-# Source: https://helm.sh/docs/intro/install/
+# Installation script template
+# Copy this file and customize the marked sections
 #
-readonly TOOL_NAME="helm"
-readonly TOOL_DISPLAY_NAME="Helm"
-readonly TOOL_DESCRIPTION="Kubernetes package manager"
-readonly TOOL_SOURCE_URL="https://helm.sh/docs/intro/install/"
+# ============================================================================
+# CUSTOMIZE THESE VALUES
+# ============================================================================
+# Tool name and description
+readonly TOOL_NAME="example-tool"
+readonly TOOL_DISPLAY_NAME="Example Tool"
+readonly TOOL_DESCRIPTION="Brief description of what this tool does"
+readonly TOOL_SOURCE_URL="https://example.com/docs"
+
+# Supported OS (space-separated: "debian ubuntu")
 readonly SUPPORTED_OS="debian ubuntu"
-readonly REQUIRED_DEPS=("curl" "bash")
-readonly APT_DEPENDENCIES=""
 
+# Required system commands (checked before installation)
+readonly REQUIRED_DEPS=("curl" "wget" "sudo")
+
+# APT packages needed for installation (empty string if none)
+readonly APT_DEPENDENCIES="ca-certificates curl"
+
+# How to check if already installed (bash command that returns 0 if installed)
 check_if_installed() {
-    command -v helm &> /dev/null
+    command -v example-tool &> /dev/null
 }
 
+# How to verify installation succeeded (bash command that returns 0 if working)
 verify_installation_works() {
-    helm version &> /dev/null
+    example-tool --version &> /dev/null
 }
 
+# Cleanup commands (run on exit, even if script fails)
 cleanup_on_exit() {
+    # Example: rm -f /tmp/example-tool.deb
     :  # No cleanup needed
 }
 
+# ============================================================================
+# MAIN INSTALLATION FUNCTION - CUSTOMIZE THIS
+# ============================================================================
 install_tool() {
-    log_info "Downloading and executing upstream Helm installer..."
-    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    log_info "Starting installation..."
+
+    # Example: Download and install
+    # wget -O /tmp/tool.deb https://example.com/tool.deb
+    # sudo dpkg -i /tmp/tool.deb
+    # sudo apt-get install -f -y
+
+    # Example: Add repository and install
+    # sudo curl -fsSL https://example.com/key.gpg -o /etc/apt/keyrings/tool.asc
+    # echo "deb [signed-by=/etc/apt/keyrings/tool.asc] https://example.com/repo stable main" | sudo tee /etc/apt/sources.list.d/tool.list
+    # sudo apt-get update
+    # sudo apt-get install -y tool-package
+
+    # Example: Binary download
+    # curl -L https://example.com/binary -o /tmp/tool
+    # chmod +x /tmp/tool
+    # sudo mv /tmp/tool /usr/local/bin/tool
+
+    # TODO: Add your installation commands here
+    log_error "Installation not implemented - customize install_tool() function"
+    return 1
 }
 
 # ============================================================================
-# STANDARD FRAMEWORK
+# STANDARD FRAMEWORK - DO NOT MODIFY BELOW THIS LINE
 # ============================================================================
 set -euo pipefail
 IFS=$'\n\t'
@@ -37,6 +73,7 @@ IFS=$'\n\t'
 readonly SCRIPT_VERSION="1.0.0"
 readonly LOG_FILE="${LOG_FILE:-/tmp/${TOOL_NAME}-install.log}"
 
+# Logging functions
 log() {
     local level="$1"
     shift
@@ -56,6 +93,7 @@ error_exit() {
     exit 1
 }
 
+# Cleanup handler
 cleanup() {
     local exit_code=$?
     if [[ ${exit_code} -ne 0 ]]; then
@@ -68,6 +106,7 @@ cleanup() {
 trap cleanup EXIT
 trap 'error_exit "Script interrupted"' INT TERM
 
+# OS Detection
 detect_os() {
     if [[ -f /etc/os-release ]]; then
         # shellcheck disable=SC1091
@@ -87,6 +126,7 @@ check_supported_os() {
     fi
 }
 
+# Dependency checking
 check_command() {
     local cmd="$1"
     if ! command -v "${cmd}" &> /dev/null; then
@@ -122,6 +162,7 @@ install_dependencies() {
     sudo apt-get install -y ${APT_DEPENDENCIES} || error_exit "Failed to install dependencies"
 }
 
+# Usage
 usage() {
     cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
@@ -144,11 +185,13 @@ VERSION: ${SCRIPT_VERSION}
 EOF
 }
 
+# Main execution
 main() {
     local force_install=false
     local skip_verify=false
     local dry_run=false
 
+    # Parse arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -h|--help)
@@ -179,14 +222,17 @@ main() {
 
     log_info "Starting ${TOOL_DISPLAY_NAME} installation (version ${SCRIPT_VERSION})"
 
+    # System checks
     detect_os
     check_supported_os
 
+    # Check if already installed
     if [[ "${force_install}" == "false" ]] && check_if_installed; then
         log_success "${TOOL_DISPLAY_NAME} is already installed"
         exit 0
     fi
 
+    # Dependency checks
     check_dependencies || install_dependencies
 
     if [[ "${dry_run}" == "true" ]]; then
@@ -194,8 +240,10 @@ main() {
         exit 0
     fi
 
+    # Execute installation
     install_tool
 
+    # Verify
     if [[ "${skip_verify}" == "false" ]]; then
         log_info "Verifying installation..."
         if verify_installation_works; then
